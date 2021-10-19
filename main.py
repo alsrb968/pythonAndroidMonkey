@@ -1,9 +1,10 @@
 import os
+import platform
+import subprocess
 import threading
-import time
 from tkinter import *
 from tkinter import scrolledtext
-import platform
+
 from PIL import ImageTk, Image  # Pillow
 
 # if Mac
@@ -19,31 +20,37 @@ action: bool = False
 class TappingWorker(threading.Thread):
     def __init__(self, name):
         super().__init__()
+        self._stop_event = threading.Event()
         self.name = name  # thread 이름 지정
 
+    def stop(self):
+        monkey_stop()
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
     def run(self):
-        while True:
-            while action:
-                for coord in touch_point:
-                    adb_tab(coord[0], coord[1])
-                    time.sleep(0.5)
-            time.sleep(1)
+        monkey_tab(touch_point, 100, 10000)
 
 
 thread = TappingWorker('TappingWorker')
-thread.start()
 
 
 def btn_start():
     log('시작')
-    global action
-    action = True
+    monkey_text_clear()
+
+    global thread
+    thread = TappingWorker('TappingWorker')
+    thread.start()
 
 
 def btn_end():
     log('종료')
-    global action
-    action = False
+
+    global thread
+    thread.stop()
 
 
 def log(msg):
@@ -102,10 +109,41 @@ def adb_tab(x, y):
     log_text.insert(END, 'tap {x} {y}'.format(x=x, y=y))
 
 
+def monkey_text_clear():
+    open('monkey.txt', 'w').close()
+
+
+def monkey_text_add(text):
+    with open("monkey.txt", "a+") as file_object:
+        # Move read cursor to the start of file.
+        file_object.seek(0)
+        # If file is not empty then append '\n'
+        data = file_object.read(100)
+        if len(data) > 0:
+            file_object.write("\n")
+        # Append text at the end of file
+        file_object.write(text)
+
+
+def monkey_tab(arr: list, delay, repeat):
+    monkey_text_add('start data >>')
+    for coord in arr:
+        monkey_text_add('DispatchPointer(0, 0, 0, {x}, {y}, 0, 0, 0, 0, 0, 0, 0)'.format(x=coord[0], y=coord[1]))
+        monkey_text_add('DispatchPointer(0, 0, 1, {x}, {y}, 0, 0, 0, 0, 0, 0, 0)'.format(x=coord[0], y=coord[1]))
+        monkey_text_add('UserWait({delay})'.format(delay=delay))
+
+    subprocess.call('adb push monkey.txt /data/', shell=True)
+    subprocess.call('adb shell monkey -f /data/monkey.txt {repeat}'.format(repeat=repeat), shell=True)
+
+
+def monkey_stop():
+    subprocess.call('adb shell killall -9 com.android.commands.monkey', shell=True)
+
+
 if __name__ == '__main__':
     root = Tk()
     root.title('Android Monkey')
-    root.geometry('640x480+1800+800')
+    root.geometry('640x480+500+500')
     root.resizable(False, False)
 
     log_text = scrolledtext.ScrolledText(root)
@@ -131,7 +169,7 @@ if __name__ == '__main__':
     photo = ImageTk.PhotoImage(image)
 
     canvas = Canvas(root, width=img_width, height=img_height, bg='blue')
-    canvas.create_image(img_width / 2 + 3, img_height / 2 + 3, image=photo)
+    canvas.create_image(img_width / 2 + 2, img_height / 2 + 3, image=photo)
     canvas.pack(side='top', anchor='nw')
     canvas.old_coords = None
     canvas.bind('<ButtonRelease-1>', paint)
