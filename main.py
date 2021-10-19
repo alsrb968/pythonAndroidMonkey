@@ -17,6 +17,11 @@ touch_point = []
 action: bool = False
 
 
+def focus_next_widget(event):
+    event.widget.tk_focusNext().focus()
+    return("break")
+
+
 class TappingWorker(threading.Thread):
     def __init__(self, name):
         super().__init__()
@@ -31,7 +36,10 @@ class TappingWorker(threading.Thread):
         return self._stop_event.is_set()
 
     def run(self):
-        monkey_tab(touch_point, 100, 10000)
+        freq = int(freqText.get(1.0, END).rstrip('\n'))
+        repeat = int(repeatText.get(1.0, END).rstrip('\n'))
+        print('freq={}, repeat={}'.format(freq, repeat))
+        monkey_tab(touch_point, freq, repeat)
 
 
 thread = TappingWorker('TappingWorker')
@@ -143,8 +151,8 @@ def monkey_stop():
 if __name__ == '__main__':
     root = Tk()
     root.title('Android Monkey')
-    root.geometry('640x480+500+500')
-    root.resizable(False, False)
+    root.geometry('650x470+500+500')
+    # root.resizable(False, False)
 
     log_text = scrolledtext.ScrolledText(root)
     log_text.config(wrap=WORD, width=100, height=10, font=('Consolas', 11))
@@ -156,6 +164,18 @@ if __name__ == '__main__':
     labelframe.pack(side='right', anchor='ne')
     Button(labelframe, text='시작', command=btn_start).pack()
     Button(labelframe, text='종료', command=btn_end).pack()
+
+    freqLabelframe = LabelFrame(labelframe, text='주기 ms', relief='solid', bd=1)
+    freqLabelframe.pack()
+    freqText = Text(freqLabelframe, width=13, height=1)
+    freqText.pack()
+    freqText.bind("<Tab>", focus_next_widget)
+
+    repeatLabelframe = LabelFrame(labelframe, text='반복', relief='solid', bd=1)
+    repeatLabelframe.pack()
+    repeatText = Text(repeatLabelframe, width=13, height=1)
+    repeatText.pack()
+    repeatText.bind("<Tab>", focus_next_widget)
 
     img_name = screen_capture()
     image = Image.open(img_name)
