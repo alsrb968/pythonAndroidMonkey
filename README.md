@@ -9,6 +9,7 @@ Android ADB UI Monkey Test Program
 
 ### 사전 설정
 
+- python 설치된 상태
 - ADB모드 상태
 - PC와 USB 케이블 연결된 상태
 
@@ -49,5 +50,8 @@ Android ADB UI Monkey Test Program
 ## 사용법
 
 - 프로그램 실행 후 화면 터치하여 좌표 설정
-- '시작' 버튼 눌러 좌표 설정한 순서대로 500ms마다 tap 수행
+- 클릭 간 주기 입력
+- 한 cycle 반복 횟수 입력
+- '시작' 버튼 눌러 좌표 설정한 순서대로 tap 수행
 - '종료' 버튼 눌러 동작 중지
+- 초기화하려면 재시작
