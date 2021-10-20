@@ -9,6 +9,7 @@ Android ADB UI Monkey Test Program
 
 ### 사전 설정
 
+- python 설치된 상태
 - ADB모드 상태
 - PC와 USB 케이블 연결된 상태
 
