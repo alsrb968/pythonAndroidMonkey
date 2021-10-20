@@ -14,7 +14,6 @@ if platform.system() == "Darwin":
 IMG_DIR = os.path.abspath("img") + '/'
 
 touch_point = []
-action: bool = False
 
 
 def focus_next_widget(event):
