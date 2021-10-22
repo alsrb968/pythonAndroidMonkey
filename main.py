@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import subprocess
 import threading
@@ -13,7 +15,7 @@ touch_point = []
 
 def focus_next_widget(event):
     event.widget.tk_focusNext().focus()
-    return("break")
+    return ("break")
 
 
 class TappingWorker(threading.Thread):
