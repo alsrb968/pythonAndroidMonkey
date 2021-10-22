@@ -5,11 +5,11 @@ Android ADB UI Monkey Test Program
 
 ![img.png](img.png)
 
-## 실행
+## 실행 파일 만들기 (윈도우: .exe)
 
 ### 사전 설정
 
-- python 설치된 상태
+- python 3.9 이하 설치된 상태
 - ADB모드 상태
 - PC와 USB 케이블 연결된 상태
 
@@ -17,35 +17,31 @@ Android ADB UI Monkey Test Program
 
     python -m venv venv
 
-### pip upgrade
-
 #### Mac OS
 
-    ./venv/bin/pip install --upgrade pip
+    source venv/bin/activate
+
+![img_2.png](img_2.png)
 
 #### Windows OS
 
-    ./venv/Scripts/pip install --upgrade pip
+    venv\Scripts\activate.bat
 
-### pillow 설치
+![img_1.png](img_1.png)
 
-#### Mac OS
+### 패키지 설치
 
-    ./venv/bin/pip install pillow
-
-#### Windows OS
-
-    ./venv/Scripts/pip install pillow
+    pip install -r requirements.txt
 
 ### 프로그램 실행
 
-#### Mac OS
+    python main.py
 
-    ./venv/bin/python main.py
+### .exe 파일 생성
 
-#### Windows OS
+    pyinstaller -F --noconsole main.py
 
-    ./venv/Scripts/python main.py
+/dist 경로에 main.exe 생성됨.
 
 ## 사용법
 
