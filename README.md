@@ -45,7 +45,7 @@ Android ADB UI Monkey Test Program
 
     pyinstaller -F --noconsole main.py
 
-/dist 경로에 main.exe 생성됨.
+/dist 경로에 main.exe 생성됨. (윈도우만)
 
 ## 사용법
 
