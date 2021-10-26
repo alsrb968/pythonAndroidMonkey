@@ -147,7 +147,7 @@ def monkey_stop():
 if __name__ == '__main__':
     root = Tk()
     root.title('Android Monkey')
-    root.geometry('650x470+500+500')
+    root.geometry('650x550+500+500')
     # root.resizable(False, False)
 
     log_text = scrolledtext.ScrolledText(root)
