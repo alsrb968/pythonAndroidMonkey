@@ -5,6 +5,10 @@ Android ADB UI Monkey Test Program
 
 ![img.png](img.png)
 
+## 주의
+
+한글 포함된 경로에 설치 시 실행 불가
+
 ## 실행 파일 만들기 (윈도우: .exe)
 
 ### 사전 설정
