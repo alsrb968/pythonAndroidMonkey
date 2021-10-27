@@ -5,8 +5,12 @@ import subprocess
 import threading
 from tkinter import *
 from tkinter import scrolledtext
-
 from PIL import ImageTk, Image  # Pillow
+import platform
+
+# if Mac
+if platform.system() == "Darwin":
+    from tkmacosx import Button
 
 IMG_DIR = os.path.abspath("img") + '/'
 
