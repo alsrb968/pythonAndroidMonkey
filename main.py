@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-import subprocess
 import threading
 from tkinter import *
 from tkinter import scrolledtext
 from PIL import ImageTk, Image  # Pillow
+from monkey import Monkey
 import platform
 
 # if Mac
@@ -13,6 +13,8 @@ if platform.system() == "Darwin":
     from tkmacosx import Button
 
 IMG_DIR = os.path.abspath("img") + '/'
+SCRIPT_FILE = 'monkey.txt'
+monkey: Monkey = Monkey(SCRIPT_FILE)
 
 touch_point = []
 
@@ -29,36 +31,45 @@ class TappingWorker(threading.Thread):
         self.name = name  # thread 이름 지정
 
     def stop(self):
-        monkey_stop()
+        monkey.stop()
         self._stop_event.set()
 
     def stopped(self):
         return self._stop_event.is_set()
 
     def run(self):
-        freq = int(freqText.get(1.0, END).rstrip('\n'))
-        repeat = int(repeatText.get(1.0, END).rstrip('\n'))
+        freq = int(freq_text.get(1.0, END).rstrip('\n'))
+        repeat = int(repeat_text.get(1.0, END).rstrip('\n'))
         print('freq={}, repeat={}'.format(freq, repeat))
-        monkey_tab(touch_point, freq, repeat)
+        monkey.tab(touch_point, freq, repeat)
 
 
-thread = TappingWorker('TappingWorker')
+thread: TappingWorker
 
 
-def btn_start():
+def on_start():
     log('시작')
-    monkey_text_clear()
+    monkey.clear()
 
     global thread
     thread = TappingWorker('TappingWorker')
     thread.start()
 
 
-def btn_end():
+def on_end():
     log('종료')
 
     global thread
     thread.stop()
+
+
+def on_restart():
+    on_end()
+    """Restarts the current program.
+    Note: this function does not return. Any cleanup action (like
+    saving data) must be done before calling this function."""
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
 
 
 def log(msg):
@@ -69,7 +80,7 @@ def log(msg):
     log_text.configure(state='disabled')  # 텍스트 위젯을 읽기 전용으로 설정
 
 
-def paint(event):
+def on_draw_dot(event):
     radius = 4
     x1, y1 = (event.x - radius), (event.y - radius)
     x2, y2 = (event.x + radius), (event.y + radius)
@@ -117,37 +128,6 @@ def adb_tab(x, y):
     log_text.insert(END, 'tap {x} {y}'.format(x=x, y=y))
 
 
-def monkey_text_clear():
-    open('monkey.txt', 'w').close()
-
-
-def monkey_text_add(text):
-    with open("monkey.txt", "a+") as file_object:
-        # Move read cursor to the start of file.
-        file_object.seek(0)
-        # If file is not empty then append '\n'
-        data = file_object.read(100)
-        if len(data) > 0:
-            file_object.write("\n")
-        # Append text at the end of file
-        file_object.write(text)
-
-
-def monkey_tab(arr: list, delay, repeat):
-    monkey_text_add('start data >>')
-    for coord in arr:
-        monkey_text_add('DispatchPointer(0, 0, 0, {x}, {y}, 0, 0, 0, 0, 0, 0, 0)'.format(x=coord[0], y=coord[1]))
-        monkey_text_add('DispatchPointer(0, 0, 1, {x}, {y}, 0, 0, 0, 0, 0, 0, 0)'.format(x=coord[0], y=coord[1]))
-        monkey_text_add('UserWait({delay})'.format(delay=delay))
-
-    subprocess.call('adb push monkey.txt /data/', shell=True)
-    subprocess.call('adb shell monkey -f /data/monkey.txt {repeat}'.format(repeat=repeat), shell=True)
-
-
-def monkey_stop():
-    subprocess.call('adb shell killall -9 com.android.commands.monkey', shell=True)
-
-
 if __name__ == '__main__':
     root = Tk()
     root.title('Android Monkey')
@@ -160,22 +140,27 @@ if __name__ == '__main__':
     log_text.configure(state='disabled')  # 텍스트 위젯을 읽기 전용으로 설정
     log_text.pack(side='bottom')
 
-    labelframe = LabelFrame(root, text='버튼', relief='solid', bd=1)
-    labelframe.pack(side='right', anchor='ne')
-    Button(labelframe, text='시작', command=btn_start).pack()
-    Button(labelframe, text='종료', command=btn_end).pack()
+    root_frame = LabelFrame(root)
+    root_frame.pack(side='right', anchor='ne')
+    button_frame = LabelFrame(root_frame, text='버튼', relief='solid', bd=1)
+    button_frame.pack()
+    Button(button_frame, text='시작', command=on_start).pack()
+    Button(button_frame, text='종료', command=on_end).pack()
+    Button(button_frame, text='초기화', command=on_restart).pack()
 
-    freqLabelframe = LabelFrame(labelframe, text='주기 ms', relief='solid', bd=1)
-    freqLabelframe.pack()
-    freqText = Text(freqLabelframe, width=13, height=1)
-    freqText.pack()
-    freqText.bind("<Tab>", focus_next_widget)
+    freq_frame = LabelFrame(root_frame, text='주기 ms', relief='solid', bd=1)
+    freq_frame.pack()
+    freq_text = Text(freq_frame, width=11, height=1)
+    freq_text.insert(CURRENT, '200')
+    freq_text.pack()
+    freq_text.bind("<Tab>", focus_next_widget)
 
-    repeatLabelframe = LabelFrame(labelframe, text='반복', relief='solid', bd=1)
-    repeatLabelframe.pack()
-    repeatText = Text(repeatLabelframe, width=13, height=1)
-    repeatText.pack()
-    repeatText.bind("<Tab>", focus_next_widget)
+    repeat_frame = LabelFrame(root_frame, text='반복', relief='solid', bd=1)
+    repeat_frame.pack()
+    repeat_text = Text(repeat_frame, width=11, height=1)
+    repeat_text.insert(CURRENT, '1000')
+    repeat_text.pack()
+    repeat_text.bind("<Tab>", focus_next_widget)
 
     img_name = screen_capture()
     image = Image.open(img_name)
@@ -192,6 +177,6 @@ if __name__ == '__main__':
     canvas.create_image(img_width / 2 + 2, img_height / 2 + 3, image=photo)
     canvas.pack(side='top', anchor='nw')
     canvas.old_coords = None
-    canvas.bind('<ButtonRelease-1>', paint)
+    canvas.bind('<ButtonRelease-1>', on_draw_dot)
 
     root.mainloop()
