@@ -3,6 +3,12 @@ Android ADB UI Monkey Test Program
 
 ## 프로그램 실행 화면
 
+### Windows OS
+
+![](action.gif)
+
+### Mac OS
+
 ![img.png](img.png)
 
 ## 주의
